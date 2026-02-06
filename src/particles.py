@@ -95,67 +95,192 @@ class ParticleType:
         return f"{self.name} (PDG={self.pdg}, m={self.mass:.3f} GeV, q={self.charge:+.0f})"
 
 
+import math
+
+class FourVector:
+    """Mathematical object for Energy and Momentum [E, px, py, pz]."""
+
+    def __init__(self, e_val, px_val, py_val, pz_val):
+        self.e = e_val
+        self.px = px_val
+        self.py = py_val
+        self.pz = pz_val
+
+    # --- Core components ---
+    @property
+    def e(self):
+        return self._e
+
+    @e.setter
+    def e(self, value):
+        if not isinstance(value, (int, float)):
+            raise TypeError("E must be a number")
+        self._e = float(value)
+
+    @property
+    def px(self):
+        return self._px
+
+    @px.setter
+    def px(self, value):
+        if not isinstance(value, (int, float)):
+            raise TypeError("px must be a number")
+        self._px = float(value)
+
+    @property
+    def py(self):
+        return self._py
+
+    @py.setter
+    def py(self, value):
+        if not isinstance(value, (int, float)):
+            raise TypeError("py must be a number")
+        self._py = float(value)
+
+    @property
+    def pz(self):
+        return self._pz
+
+    @pz.setter
+    def pz(self, value):
+        if not isinstance(value, (int, float)):
+            raise TypeError("pz must be a number")
+        self._pz = float(value)
+
+    # --- Derived quantities ---
+    @property
+    def p2(self):
+        """Momentum magnitude squared."""
+        return self.px**2 + self.py**2 + self.pz**2
+
+    @property
+    def p(self):
+        """Momentum magnitude."""
+        return math.sqrt(self.p2)
+
+    @property
+    def pt2(self):
+        """Transverse momentum squared."""
+        return self.px**2 + self.py**2
+
+    @property
+    def pt(self):
+        """Transverse momentum."""
+        return math.sqrt(self.pt2)
+
+    @property
+    def mass2(self):
+        """Invariant mass squared (E^2 - |p|^2)."""
+        return self.e**2 - self.p2
+
+    @property
+    def mass(self):
+        """Invariant mass (non-negative)."""
+        m2 = self.mass2
+        return math.sqrt(m2) if m2 >= 0 else -math.sqrt(-m2)
+
+    @property
+    def eta(self):
+        """Pseudorapidity."""
+        p = self.p
+        if p == abs(self.pz):
+            return math.inf if self.pz >= 0 else -math.inf
+        return 0.5 * math.log((p + self.pz) / (p - self.pz))
+
+    @property
+    def phi(self):
+        """Azimuthal angle."""
+        return math.atan2(self.py, self.px)
+
+    # --- Operations ---
+    def boost(self, beta_x=0.0, beta_y=0.0, beta_z=0.0):
+        """
+        Return a new FourVector boosted by velocity beta = (bx, by, bz).
+        Uses units where c = 1.
+        """
+        beta2 = beta_x**2 + beta_y**2 + beta_z**2
+        if beta2 >= 1.0:
+            raise ValueError("Beta^2 must be < 1")
+
+        gamma = 1.0 / math.sqrt(1.0 - beta2)
+        bp = beta_x * self.px + beta_y * self.py + beta_z * self.pz
+        gamma2 = (gamma - 1.0) / beta2 if beta2 > 0 else 0.0
+
+        px_prime = self.px + gamma2 * bp * beta_x + gamma * beta_x * self.e
+        py_prime = self.py + gamma2 * bp * beta_y + gamma * beta_y * self.e
+        pz_prime = self.pz + gamma2 * bp * beta_z + gamma * beta_z * self.e
+        e_prime = gamma * (self.e + bp)
+
+        return FourVector(e_prime, px_prime, py_prime, pz_prime)
+
+    def __repr__(self):
+        return f"(E: {self.e:8.3f}, px: {self.px:8.3f}, py: {self.py:8.3f}, pz: {self.pz:8.3f})"
+
     
 
 class Particle:
-    def __init__(self, particle_type, p4, eta=0.0, phi=0.0, pt=0.0, mother=None, eventID=None):
+    def __init__(self, particle_type, p4, mother=None, eventID=None):
         self.particle_type = particle_type
         self.p4 = p4
-        self.eta = eta
-        self.phi = phi
-        self.pt = pt
         self.mother = mother
         self.eventID = eventID
+
     
     @property
     def particle_type(self):
         return self._particle_type
 
-    @Pparticle_type.setter
+    @particle_type.setter
     def particle_type(self, particle_type):
         if not isinstance(particle_type, ParticleType):
             raise TypeError("particle_type must be a ParticleType object")
         self._particle_type = particle_type
-    
+        
+    @property
+    def pdg(self):
+        return self.particle_type.pdg
+
+    @property
+    def mass(self):
+        return self.particle_type.mass
+
+    @property
+    def charge(self):
+        return self.particle_type.charge
+
+    @property
+    def particle_class(self):
+        return self.particle_type.particle_class
+
+    @property
+    def stable(self):
+        return self.particle_type.stable
+
+    @property
+    def decay_modes(self):
+        return self.particle_type.decay_modes
+
     @property
     def p4(self):
-        if not isinstance(self._p4, FourVector):
-            raise TypeError("p4 must be a FourVector object")
         return self._p4
 
     @p4.setter
     def p4(self, p4):
+        if not isinstance(p4, FourVector):
+            raise TypeError("p4 must be a FourVector object")
         self._p4 = p4
-    
+
     @property
     def eta(self):
-        if not isinstance(self._eta, float):
-            raise TypeError("eta must be a float")
-        return self._eta
+        return self.p4.eta
 
-    @eta.setter
-    def eta(self, eta):
-        self._eta = eta
-    
     @property
     def phi(self):
-        if not isinstance(self._phi, float):
-            raise TypeError("phi must be a float")
-        return self._phi
-
-    @phi.setter
-    def phi(self, phi):
-        self._phi = phi
+        return self.p4.phi
 
     @property
     def pt(self):
-        if not isinstance(self._pt, float):
-            raise TypeError("pt must be a float")
-        return self._pt
-
-    @pt.setter
-    def pt(self, pt):
-        self._pt = pt
+        return self.p4.pt
 
     @property
     def mother(self):
@@ -163,37 +288,20 @@ class Particle:
 
     @mother.setter
     def mother(self, mother):
-        if not isinstance(mother, Particle):
-            raise TypeError("mother must be a Particle object")
+        if mother is not None and not isinstance(mother, Particle):
+            raise TypeError("mother must be a Particle object or None")
         self._mother = mother
-    
+
     @property
     def eventID(self):
         return self._eventID
 
     @eventID.setter
     def eventID(self, eventID):
-        if not isinstance(eventID, int):
-            raise TypeError("eventID must be an integer")
+        if eventID is not None and not isinstance(eventID, int):
+            raise TypeError("eventID must be an integer or None")
         self._eventID = eventID
-    
+
     def __str__(self):
         motherStr = self.mother if self.mother else "Initial Beam"
         return f"{self.eventID:03d} | {self.particle_type.pdg:>3} | {motherStr:<12} | {self.p4}"
-
-def load_particle_types(json_path):
-    """Return a dict: name -> ParticleType."""
-    data = json.loads(Path(json_path).read_text())
-    catalog = {}
-    for item in data:
-        ptype = ParticleType(
-            name=item["name"],
-            pdg=item["pdg"],
-            particle_class=item["particle_class"],
-            mass=item["mass"],
-            charge=item["charge"],
-            stable=item["stable"],
-            decay_modes=item["decay_modes"],
-        )
-        catalog[ptype.name] = ptype
-    return catalog

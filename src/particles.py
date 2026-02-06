@@ -3,23 +3,6 @@ import numpy as np
 import json
 from pathlib import Path
 
-def load_particle_types(json_path):
-    """Return a dict: name -> ParticleType."""
-    data = json.loads(Path(json_path).read_text())
-    catalog = {}
-    for item in data:
-        ptype = ParticleType(
-            name=item["name"],
-            pdg=item["pdg"],
-            particle_class=item["particle_class"],
-            mass=item["mass"],
-            charge=item["charge"],
-            stable=item["stable"],
-            decay_modes=item["decay_modes"],
-        )
-        catalog[ptype.name] = ptype
-    return catalog
-
 class ParticleType:
     def __init__(self, name, pdg, particle_class, mass, charge, stable, decay_modes):
         self.name = name
@@ -197,3 +180,20 @@ class Particle:
     def __str__(self):
         motherStr = self.mother if self.mother else "Initial Beam"
         return f"{self.eventID:03d} | {self.particle_type.pdg:>3} | {motherStr:<12} | {self.p4}"
+
+def load_particle_types(json_path):
+    """Return a dict: name -> ParticleType."""
+    data = json.loads(Path(json_path).read_text())
+    catalog = {}
+    for item in data:
+        ptype = ParticleType(
+            name=item["name"],
+            pdg=item["pdg"],
+            particle_class=item["particle_class"],
+            mass=item["mass"],
+            charge=item["charge"],
+            stable=item["stable"],
+            decay_modes=item["decay_modes"],
+        )
+        catalog[ptype.name] = ptype
+    return catalog

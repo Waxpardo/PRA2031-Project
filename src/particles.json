@@ -1,0 +1,125 @@
+[
+  {
+    "name": "mu-",
+    "pdg": 13,
+    "particle_class": "lepton",
+    "mass": 0.105658,
+    "charge": -1.0,
+    "stable": false,
+    "decay_modes": [
+      {
+        "br": 1.0,
+        "daughters": [
+          "e-",
+          "nu_mu",
+          "nu_e_bar"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "mu+",
+    "pdg": -13,
+    "particle_class": "lepton",
+    "mass": 0.105658,
+    "charge": 1.0,
+    "stable": false,
+    "decay_modes": [
+      {
+        "br": 1.0,
+        "daughters": [
+          "e+",
+          "nu_mu_bar",
+          "nu_e"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "e-",
+    "pdg": 11,
+    "particle_class": "lepton",
+    "mass": 0.000511,
+    "charge": -1.0,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "e+",
+    "pdg": -11,
+    "particle_class": "lepton",
+    "mass": 0.000511,
+    "charge": 1.0,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "nu_mu",
+    "pdg": 14,
+    "particle_class": "neutrino",
+    "mass": 0.0,
+    "charge": 0.0,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "nu_mu_bar",
+    "pdg": -14,
+    "particle_class": "neutrino",
+    "mass": 0.0,
+    "charge": 0.0,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "nu_e",
+    "pdg": 12,
+    "particle_class": "neutrino",
+    "mass": 0.0,
+    "charge": 0.0,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "nu_e_bar",
+    "pdg": -12,
+    "particle_class": "neutrino",
+    "mass": 0.0,
+    "charge": 0.0,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "gamma",
+    "pdg": 22,
+    "particle_class": "boson",
+    "mass": 0.0,
+    "charge": 0.0,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "X",
+    "pdg": 999,
+    "particle_class": "resonance",
+    "mass": 1.0,
+    "charge": 0.0,
+    "stable": false,
+    "decay_modes": [
+      {
+        "br": 0.5,
+        "daughters": [
+          "e-",
+          "e+"
+        ]
+      },
+      {
+        "br": 0.5,
+        "daughters": [
+          "mu-",
+          "mu+"
+        ]
+      }
+    ]
+  }
+]

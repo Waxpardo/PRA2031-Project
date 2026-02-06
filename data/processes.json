@@ -1,0 +1,40 @@
+[
+  {
+    "name": "mu_mu_elastic",
+    "incoming": [
+      "mu-",
+      "mu+"
+    ],
+    "outgoing": [
+      "mu-",
+      "mu+"
+    ],
+    "model": "elastic_2to2",
+    "notes": "Toy elastic scattering in CM frame"
+  },
+  {
+    "name": "mu_mu_to_ee",
+    "incoming": [
+      "mu-",
+      "mu+"
+    ],
+    "outgoing": [
+      "e-",
+      "e+"
+    ],
+    "model": "s_channel",
+    "notes": "Optional annihilation channel"
+  },
+  {
+    "name": "mu_mu_to_X",
+    "incoming": [
+      "mu-",
+      "mu+"
+    ],
+    "outgoing": [
+      "X"
+    ],
+    "model": "resonance",
+    "notes": "Toy resonance production; X decays in particles.json"
+  }
+]

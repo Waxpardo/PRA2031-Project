@@ -1,3 +1,9 @@
+import json
+from pathlib import Path
+
+from src.Particle import ParticleType
+from src.Process import Process
+
 def load_particle_types(json_path):
     """Return a dict: name -> ParticleType."""
     data = json.loads(Path(json_path).read_text())

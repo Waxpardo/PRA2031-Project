@@ -61,7 +61,6 @@ class Track:
     def __str__(self):
         return f"Track(eventID={self.eventID}, particles={len(self._particles)}, total_p4={self.total_p4})"
 
-
 # -----------------------------
 # Track following algorithm
 # -----------------------------

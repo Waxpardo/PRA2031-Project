@@ -132,11 +132,61 @@ class FourVector:
         return FourVector(e_prime, px_prime, py_prime, pz_prime)
 
     def __add__(self, other):
+        if not isinstance(other, FourVector):
+            return NotImplemented
         return FourVector(self.e + other.e, self.px + other.px, self.py + other.py, self.pz + other.pz)
 
     def __sub__(self, other):
+        if not isinstance(other, FourVector):
+            return NotImplemented
         return FourVector(self.e - other.e, self.px - other.px, self.py - other.py, self.pz - other.pz)
 
-    def __mul__(self, other):
-        return FourVector(self.e * self.metric[0] * other.e, self.px * self.metric[1] * other.px, self.py * self.metric[2] * other.py, self.pz * self.metric[3] * other.pz)
+    def __mul__(self, a):
+        if isinstance(a, (int, float)):
+            return FourVector(self.e*a, self.px*a, self.py*a, self.pz*a)
+        return NotImplemented
+
+    def __rmul__(self, a):
+        return self.__mul__(a)
+
+    def __truediv__(self, a):
+        if isinstance(a, (int, float)):
+            if a == 0:
+                raise ZeroDivisionError
+            return FourVector(self.e/a, self.px/a, self.py/a, self.pz/a)
+        return NotImplemented
+
+    def dot(self, other):
+        return self.e*other.e - self.px*other.px - self.py*other.py - self.pz*other.pz
+
+    def __matmul__(self, other):
+        if not isinstance(other, FourVector):
+            return NotImplemented
+        return self.dot(other)
+
+    def __eq__(self, other):
+        if not isinstance(other, FourVector):
+            return NotImplemented
+        return (self.e == other.e) & (self.px == other.px) & (self.py == other.py) & (self.pz == other.pz)
     
+    def __lt__(self, other):
+        if not isinstance(other, FourVector):
+            return NotImplemented
+        return self.pt < other.pt
+
+    def __iter__(self):
+        yield self.e; yield self.px; yield self.py; yield self.pz
+
+    def __len__(self):
+        return 4
+
+    def __getitem__(self, i):
+        return (self.e, self.px, self.py, self.pz)[i]
+
+    def __neg__(self):
+        return FourVector(-self.e, -self.px, -self.py, -self.pz)
+
+    def __abs__(self):
+        return self.inv_mass
+
+

@@ -56,13 +56,15 @@ class ParticleClass:
     # -------------------
     @property
     def mass(self):
-        if not isinstance(self._mass, float):
-            raise TypeError("mass must be a float")
         return self._mass
 
     @mass.setter
     def mass(self, mass):
-        self._mass = mass
+        if not isinstance(mass, (int, float)):
+            raise TypeError("mass must be a number")
+        if mass < 0:
+            raise ValueError("mass must be non-negative")
+        self._mass = float(mass)
 
     # -------------------
     # Property: charge
@@ -73,8 +75,8 @@ class ParticleClass:
 
     @charge.setter
     def charge(self, charge):
-        if not isinstance(charge, float):
-            raise TypeError("charge must be a float")
+        if not isinstance(charge, (int, float)):
+            raise TypeError("charge must be a number")
         self._charge = charge
         
 
@@ -101,19 +103,52 @@ class ParticleClass:
     @decay_modes.setter
     def decay_modes(self, decay_modes):
         if not isinstance(decay_modes, list):
-            raise TypeError("decay_modes must be a list")
+            raise TypeError("decay_modes must be a list of dictionaries")
+
+        total_br = 0.0
+
+        for mode in decay_modes:
+            if not isinstance(mode, dict):
+                raise TypeError("Each decay mode must be a dictionary")
+
+            if "br" not in mode or "products" not in mode:
+                raise ValueError("Each decay mode must contain 'br' and 'products'")
+
+            br = mode["br"]
+            products = mode["products"]
+
+            if not isinstance(br, (int, float)):
+                raise TypeError("Branching ratio must be a number")
+
+            if br < 0 or br > 1:
+                raise ValueError("Branching ratio must be between 0 and 1")
+
+            total_br += br
+
+            if not isinstance(products, list):
+                raise TypeError("'products' must be a list of PDG IDs")
+
+            for pdg in products:
+                if not isinstance(pdg, int):
+                    raise TypeError("Decay product PDG IDs must be integers")
+
+        if total_br > 1.000001:
+            raise ValueError(f"Total branching ratio exceeds 1: {total_br}")
+
         self._decay_modes = decay_modes
 
-    # -------------------
-    # Representation methods
-    # -------------------
+
+ 
     def __repr__(self):
         return f"ParticleClass(name={self.name!r}, pdg={self.pdg})"
 
     def __eq__(self, other):
         if not isinstance(other, ParticleClass):
             return NotImplemented
-        return (self.name == other.name and self.pdg == other.pdg)
+        return self.pdg == other.pdg
 
     def __str__(self):
-        return f"{self.name} (PDG={self.pdg}, m={self.mass:.3f} GeV, q={self.charge:+.0f})"
+        return f"{self.name} (PDG={self.pdg}, m={self.mass:.3f} GeV, q={self.charge:+g})"
+
+    def __hash__(self):
+        return hash(self.pdg)

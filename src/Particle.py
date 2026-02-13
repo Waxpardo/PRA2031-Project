@@ -2,8 +2,6 @@ import math
 from FourVector.py import FourVector
 from ParticleClass.py import ParticleClass
 
-
->>>>>>> Iñaki
 class Particle:
     """
     Represents a particle in an event. A Particle has a ParticleClass (shared properties
@@ -19,9 +17,7 @@ class Particle:
         self.mother = mother
         self.eventID = eventID
 
-    # -------------------
-    # Property: particle_type
-    # -------------------
+    # particle_type
     @property
     def particle_type(self):
         return self._particle_type
@@ -32,51 +28,42 @@ class Particle:
             raise TypeError("particle_type must be a ParticleClass object")
         self._particle_type = particle_type
 
-    # -------------------
-    # Property: pdg
-    # -------------------
+    # Pardicle Data Group (pdg)
     @property
     def pdg(self):
         return self.particle_type.pdg
 
-    # -------------------
-    # Property: mass
-    # -------------------
+    # Mass
     @property
     def mass(self):
         return self.particle_type.mass
 
-    # -------------------
-    # Property: charge
-    # -------------------
+
+    # Charge
     @property
     def charge(self):
         return self.particle_type.charge
 
-    # -------------------
-    # Property: Particle_class
-    # -------------------
+
+    # Particle class
     @property
     def particle_class(self):
         return self.particle_type.particle_class
 
-    # -------------------
-    # Property: stable
-    # -------------------
+
+    # Stable
     @property
     def stable(self):
         return self.particle_type.stable
 
-    # -------------------
-    # Property: decay_modes
-    # -------------------
+
+    # Decay modes
     @property
     def decay_modes(self):
         return self.particle_type.decay_modes
 
-    # -------------------
-    # Property: p4
-    # -------------------
+
+    # Four momentum (p4)
     @property
     def p4(self):
         return self._p4
@@ -87,30 +74,35 @@ class Particle:
             raise TypeError("p4 must be a FourVector object")
         self._p4 = p4
 
-    # -------------------
-    # Property: eta
-    # -------------------
+    @property
+    def e(self): return self.p4.e
+    @property
+    def px(self): return self.p4.px
+    @property
+    def py(self): return self.p4.py
+    @property
+    def pz(self): return self.p4.pz
+    @property
+    def inv_mass(self): return self.p4.inv_mass
+
+
+
+    # Pseudorapidity (eta)
     @property
     def eta(self):
         return self.p4.eta
 
-    # -------------------
-    # Property: phi
-    # -------------------
+    # azimuthal angle (phi)
     @property
     def phi(self):
         return self.p4.phi
 
-    # -------------------
-    # Property: pt
-    # -------------------
+    # Trnasverse momentum (pt)
     @property
     def pt(self):
         return self.p4.pt
 
-    # -------------------
-    # Property: mother
-    # -------------------
+    # mother
     @property
     def mother(self):
         return self._mother
@@ -121,9 +113,7 @@ class Particle:
             raise TypeError("mother must be a Particle object or None")
         self._mother = mother
 
-    # -------------------
-    # Property: eventID
-    # -------------------
+    # eventID
     @property
     def eventID(self):
         return self._eventID
@@ -134,9 +124,13 @@ class Particle:
             raise TypeError("eventID must be an integer or None")
         self._eventID = eventID
 
-    # -------------------
     # String representation
-    # -------------------
     def __str__(self):
-        motherStr = self.mother if self.mother else "Initial Beam"
-        return f"{self.eventID:03d} | {self.particle_type.pdg:>3} | {motherStr:<12} | {self.p4}"
+        eid = "---" if self.eventID is None else f"{self.eventID:03d}"
+        mother_str = "Initial" if self.mother is None else f"PDG {self.mother.pdg}"
+        return f"{eid} | {self.pdg:>6} | {mother_str:<10} | {self.p4}"
+
+    
+    def __repr__(self):
+    return f"Particle(pdg={self.pdg}, p4={self.p4!r}, eventID={self.eventID})"
+

@@ -53,13 +53,14 @@ class ParticleClass:
 
     @property
     def charge(self):
-        if not isinstance(self._charge, float):
-            raise TypeError("charge must be a float")
         return self._charge
 
     @charge.setter
     def charge(self, charge):
+        if not isinstance(charge, float):
+            raise TypeError("charge must be a float")
         self._charge = charge
+        
 
     @property
     def stable(self):

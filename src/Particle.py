@@ -1,9 +1,17 @@
 import math
 from FourVector.py import FourVector
+from ParticleClass.y import ParticleClass
 
-    
 
 class Particle:
+    """
+    Represents a particle in an event. A Particle has a ParticleClass (shared properties
+    like mass, charge, PDG code, and decay channels) and a FourVector that stores its
+    energy and momentum components (px, py, pz), as well as derived quantities such as
+    pT, pseudorapidity, and azimuthal angle. For bookkeeping, each particle can store
+    an eventID and an optional mother reference to link decay chains.
+    """
+
     def __init__(self, particle_type, p4, mother=None, eventID=None):
         self.particle_type = particle_type
         self.p4 = p4

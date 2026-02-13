@@ -10,7 +10,7 @@ registry = ParticleRegistry("data/particles.json")
 myProcess = MuonToElectron(sqrtS=91.18)
 generator = QedSimulation(myProcess, registry)
 
-generator.Run(nEvents=10000, outfile="OurOutput.txt")
+generator.Run(nEvents=1000, outfile="OurOutput.txt")
 
 comparison = SimulatorComparison(OutFile, PythiaFile)
 comparison.Run()

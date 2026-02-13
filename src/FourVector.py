@@ -2,13 +2,27 @@ import math
 import numpy as np
 
 class FourVector:
-    """Mathematical object for Energy and Momentum [E, px, py, pz]."""
+    """
+    Represents a relativistic four-vector (E, px, py, pz). Provides accessors for
+    energy/momentum components and derived kinematic quantities such as |p|, pT,
+    invariant mass, pseudorapidity, and azimuthal angle. Includes a Lorentz boost
+    method in natural units (c = 1).
+    """
 
-    def __init__(self, e_val, px_val, py_val, pz_val):
-        self.e = e_val
-        self.px = px_val
-        self.py = py_val
-        self.pz = pz_val
+    metric = (1, -1, -1, -1)
+
+    def __init__(self, e, px, py, pz):
+        self.e = e # particle's energy energy
+        self.px = px # x component of the momentum
+        self.py = py # y component of the momentum
+        self.pz = pz # z component of the momentum
+
+
+    def __str__(self):
+        return f"(E: {self.e:8.3f}, px: {self.px:8.3f}, py: {self.py:8.3f}, pz: {self.pz:8.3f})"
+
+    def __repr__(self):
+        return f"FourVector({self.e}, {self.px}, {self.py}, {self.pz})"
 
     # --- Core components ---
     @property
@@ -73,14 +87,14 @@ class FourVector:
         return math.sqrt(self.pt2)
 
     @property
-    def mass2(self):
+    def inv_mass2(self):
         """Invariant mass squared (E^2 - |p|^2)."""
         return self.e**2 - self.p2
 
     @property
-    def mass(self):
+    def inv_mass(self):
         """Invariant mass (non-negative)."""
-        m2 = self.mass2
+        m2 = self.inv_mass2
         return math.sqrt(m2) if m2 >= 0 else -math.sqrt(-m2)
 
     @property
@@ -117,5 +131,12 @@ class FourVector:
 
         return FourVector(e_prime, px_prime, py_prime, pz_prime)
 
-    def __repr__(self):
-        return f"(E: {self.e:8.3f}, px: {self.px:8.3f}, py: {self.py:8.3f}, pz: {self.pz:8.3f})"
+    def __add__(self, other):
+        return FourVector(self.e + other.e, self.px + other.px, self.py + other.py, self.pz + other.pz)
+
+    def __sub__(self, other):
+        return FourVector(self.e - other.e, self.px - other.px, self.py - other.py, self.pz - other.pz)
+
+    def __mul__(self, other):
+        return FourVector(self.e * self.metric[0] * other.e, self.px * self.metric[1] * other.px, self.py * self.metric[2] * other.py, self.pz * self.metric[3] * other.pz)
+    

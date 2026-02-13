@@ -3,13 +3,11 @@ import numpy as np
 
 
 class PhysicsConstants:
-    """Standard physical constants."""
     Alpha = 1 / 137.036
     Gev2ToNb = 389379.366
 
 
 class FourVector:
-    """Mathematical object for Energy and Momentum [E, px, py, pz]."""
 
     def __init__(self, eVal, pxVal, pyVal, pzVal):
         self.eVal = eVal
@@ -22,7 +20,6 @@ class FourVector:
 
 
 class Particle:
-    """Metadata container for a particle."""
 
     def __init__(self, pdgId, p4, mother=None, eventId=None):
         self.pdgId = pdgId
@@ -38,11 +35,6 @@ class Particle:
 # --- The "Interface" Class ---
 
 class IProcess(ABC):
-    """
-    Formal Interface for a Physics Process.
-    Using ABC (Abstract Base Class) ensures that any class implementing
-    this interface MUST provide these methods or it will crash on instantiation.
-    """
 
     @abstractmethod
     def GetMaxWeight(self):
@@ -70,13 +62,11 @@ class IProcess(ABC):
 # --- Implementing the Interface ---
 
 class MuonToElectron(IProcess):
-    """Implementation of the mu+ mu- -> e+ e- process."""
 
     def __init__(self, sqrtS):
         self.sqrtS = sqrtS
         self.sVal = sqrtS ** 2
         self.processName = "mu+ mu- -> e+ e-"
-        # Implementing property requirements
         self.pdgIn = [13, -13]
         self.pdgOut = [11, -11]
 
@@ -96,12 +86,7 @@ class MuonToElectron(IProcess):
         sigmaNatural = (4 * np.pi * PhysicsConstants.Alpha ** 2) / (3 * self.sVal)
         return sigmaNatural * PhysicsConstants.Gev2ToNb
 
-
-# --- The Generator ---
-
 class QedSimulation:
-    """Accepts any class that implements the IProcess interface."""
-
     def __init__(self, activeProcess):
         self.activeProcess = activeProcess
         self.eventList = []
@@ -120,16 +105,13 @@ class QedSimulation:
         for i in range(1, nEvents + 1):
             eBeam = self.activeProcess.sqrtS / 2.0
 
-            # Initial state
             muMinus = Particle(self.activeProcess.PdgetIn[0], FourVector(eBeam, 0, 0, eBeam), eventId=i)
             muPlus = Particle(self.activeProcess.PdgetIn[1], FourVector(eBeam, 0, 0, -eBeam), eventId=i)
 
-            # Sampling
             cosTheta = self.SampleCosTheta()
             phiVal = np.random.uniform(0, 2 * np.pi)
             sinTheta = np.sqrt(1 - cosTheta ** 2)
 
-            # Final state
             px = eBeam * sinTheta * np.cos(phiVal)
             py = eBeam * sinTheta * np.sin(phiVal)
             pz = eBeam * cosTheta

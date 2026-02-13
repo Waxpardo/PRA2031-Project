@@ -6,8 +6,6 @@ from scipy.stats import norm
 
 class SimulatorComparison:
     def __init__(self, genOur, genPythia, labels=None):
-        """
-        gen1, gen2: numpy arrays for now will try to implement the actual data structure later        """
         self.genOur = np.array(genOur)
         self.genPythia = np.array(genPythia)
         if labels is not None:
@@ -179,13 +177,6 @@ class SimulatorComparison:
                 plt.legend()
                 plt.show()
 
-
-# 1D example
-gen1 = np.random.normal(10, 2, 1000)
-gen2 = np.random.normal(10.5, 2, 1000)
-
-comp = SimulatorComparison(gen1, gen2)
-comp.compute_difference()
 """print(comp.paired_t_test())
 print(comp.wilcoxon_test())
 print(comp.ks_test())
@@ -202,6 +193,3 @@ print(comp.wilcoxon_test())
 print(comp.ks_test())
 comp.plot_distributions()"""
 
-
-res = comp.paired_t_test()
-comp.print_result(res)

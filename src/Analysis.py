@@ -8,10 +8,10 @@ import re
 
 
 class SimulatorComparison:
-    def __init__(self, genOurFile, genPythiaFile, labels=None):
+    def __init__(self, genOurFile, genPythiaFile, labels=None, pdg_to_find=None):
 
-        self.genOur = self._deserialize_file(genOurFile)
-        self.genPythia = self._deserialize_file(genPythiaFile)
+        self.genOur = self._deserialize_file(genOurFile, pdg_to_find)
+        self.genPythia = self._deserialize_file(genPythiaFile, pdg_to_find)
 
         self.genOur = np.array(self.genOur)
         self.genPythia = np.array(self.genPythia)
@@ -23,7 +23,7 @@ class SimulatorComparison:
 
         self.delta = None
 
-    def _deserialize_file(self, filename):
+    def _deserialize_file(self, filename, pdg_to_find=None):
 
         project_root = Path(__file__).resolve().parent.parent
 
@@ -44,26 +44,37 @@ class SimulatorComparison:
 
             if line.startswith("Event"):
                 if current_event:
-                    obs = self._extract_observable(current_event)
+                    obs = self._extract_observable(current_event, pdg_to_find)
                     observables.append(obs)
                     current_event = []
             elif line:
                 current_event.append(line)
 
         if current_event:
-            obs = self._extract_observable(current_event)
+            obs = self._extract_observable(current_event, pdg_to_find)
             observables.append(obs)
 
         return observables
 
-    def _extract_observable(self, event_lines):
+    def _extract_observable(self, event_lines, pdg_to_find=None):
 
-        final_particle_line = event_lines[-2]
+        selected_line = None
+        if pdg_to_find:
+            for line in reversed(event_lines):
+                parts = line.split("|")
+                if len(parts) >= 2:
+                    pdg_str = parts[1].strip()
+                    if pdg_str == str(pdg_to_find):
+                        selected_line = line
+                        break
+        
+        if selected_line is None:
+            selected_line = event_lines[-2]
 
-        numbers = re.findall(r"[-+]?\d*\.\d+|\d+", final_particle_line)
+        numbers = re.findall(r"[-+]?\d*\.\d+|\d+", selected_line)
 
         if len(numbers) < 4:
-            raise ValueError(f"Could not parse momentum from line:\n{final_particle_line}")
+            raise ValueError(f"Could not parse momentum from line:\n{selected_line}")
 
         E, px, py, pz = map(float, numbers[:4])
 

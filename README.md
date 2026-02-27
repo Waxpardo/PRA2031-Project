@@ -1,140 +1,266 @@
-# PRA2031 Particle Physics Project
+# Mini PYTHIA
+A lightweight Python-based particle physics event generator inspired by PYTHIA.
 
-## Physics Basis
-This simulation models Leading Order (LO) QED interactions. Unlike a full-scale generator like Pythia 8, which includes Quantum Chromodynamics (QCD) and electroweak interference, this project focuses on the clean leptonic channel mu^+ mu^- to e^+ e^-. This allows for high-precision verification of relativistic kinematics and angular distributions without the background noise of hadronization.
-## What it does
+## Table of Contents
+- Description
+- Background: What is PYTHIA?
+- Features
+- Installation
+- Usage
+- Physics Basis
+- Statistical Analysis
+- Project Structure
+- Screenshots
+- Contributing
+- License
+- Contact
+- Changelog
 
-1. Loads particle definitions from JSON.
-2. Generates Monte Carlo events.
-3. Writes generated events to `outputs/OurOutput.txt`.
-4. Compares generated and reference samples with a paired test.
-5. Produces static and animated 3D track visualizations.
+---
 
-## File guide
+## Description
 
-### Main pipeline
+Mini PYTHIA is an educational Monte Carlo event generator that simulates the process  
+μ⁺ μ⁻ → e⁺ e⁻ at Leading Order (LO) in Quantum Electrodynamics (QED).
 
-- `src/Main.py`
-  - Main entry point.
-  - Runs generation, visualization, and statistical comparison.
+It generates events, writes them to file, compares them statistically to a reference sample, and visualizes reconstructed particle tracks in 3D. The project is designed for educational purposes and demonstrates relativistic kinematics, event generation, and statistical validation in a simplified framework.
 
-- `src/QedSimulation.py`
-  - Event generator for the active process.
-  - Creates event objects and writes output text.
+---
 
-- `src/MuonToElectron.py`
-  - Physics process implementation (`mu+ mu- -> e+ e-`).
+## Background: What is PYTHIA?
 
-- `src/Track.py`
-  - Track reconstruction (`TrackFollowing`) and plotting (`TrackVisualizer`).
+´´´ 
+PYTHIA is a widely used high-energy physics event generator developed for simulating particle collisions at experiments such as the Large Hadron Collider (LHC). It models the full chain of events in proton–proton collisions, including:
 
-- `src/Analysis.py`
-  - Reads event files, computes comparison statistics, and plots distributions.
-  - Has a built-in fallback if SciPy is unavailable/broken.
+- Hard scattering processes
+- Parton showers
+- Hadronization (e.g., Lund string model)
+- Particle decays
+- Underlying event physics
 
-### Models and utilities
+Mini PYTHIA does **not** aim to reproduce the full complexity of PYTHIA 8. Instead, it focuses on a clean leptonic QED channel to demonstrate core Monte Carlo principles without QCD hadronization or detector effects.
+´´´
 
-- `src/Particle.py` - Event-level particle object.
-- `src/ParticleClass.py` - Particle metadata model.
-- `src/FourVector.py` - Relativistic four-vector and kinematics.
-- `src/ParticleRegistry.py` - Particle lookup by name/PDG from JSON.
-- `src/Process.py` - Generic process definition.
-- `src/PhysicsConstants.py` - Shared physical constants.
-- `src/io.py` - JSON loaders for particles/processes.
-- `src/ConvertCsv.py` - Converts `outputs/mumu_EW.csv` to `outputs/mumu_EW.txt`.
+---
 
-### Data and outputs
+## Features
 
-- `data/particles.json` - Particle catalog.
-- `data/processes.json` - Process definitions.
-- `outputs/mumu_EW.csv` - Reference event sample.
-- `outputs/mumu_EW.txt` - Reference sample in text format.
-- `outputs/OurOutput.txt` - Generated sample.
-- `outputs/event_999_static.png` - Static track plot.
-- `outputs/event_999_animated.gif` - Animated track plot.
-- `outputs/combined_events_static.png` - Combined-events static plot.
+- Monte Carlo event generation for μ⁺ μ⁻ → e⁺ e⁻
+- Relativistic four-vector kinematics
+- Event-by-event statistical comparison with reference sample
+- Paired hypothesis testing (SciPy + fallback implementation)
+- Static and animated 3D track visualization
+- Modular and extensible architecture
+- Built-in fallback if SciPy is unavailable
 
-## Statistical method used in the analysis
-
-`src/Analysis.py` compares one observable per event (currently `cos(theta)`) between two generators:
-
-1. Per-event observable extraction
-- For each event block in each text file, it selects a particle line (optionally by PDG ID).
-- It parses that line's four-momentum `(E, px, py, pz)`.
-- It computes `cos(theta) = pz / sqrt(px^2 + py^2 + pz^2)`.
-
-2. Paired comparison
-- Events are compared in pairs: event `i` from `OurOutput.txt` is matched with event `i` from `mumu_EW.txt`.
-- Let `d_i = x_i - y_i` be the per-event difference in `cos(theta)`.
-
-3. Hypothesis test
-- Null hypothesis (`H0`): the mean paired difference is zero.
-- Primary implementation: SciPy paired t-test (`scipy.stats.ttest_rel`).
-- Fallback implementation (if SciPy is missing/broken):
-  - Computes the paired t-statistic from the sample differences.
-  - Uses a normal approximation to estimate the two-sided p-value.
-
-4. Significance reporting
-- Converts p-value to an equivalent two-sided Gaussian significance (`sigma`).
-- Interprets result as:
-  - `>= 5σ`: Discovery
-  - `>= 3σ`: Evidence
-  - `>= 2σ`: Tension
-  - `< 2σ`: Compatible
-
-This gives a direct statistical check of whether both generators produce compatible `cos(theta)` distributions event-by-event.
+---
 
 ## Installation
 
-Use a virtual environment to avoid system/conda conflicts.
+### Prerequisites
 
-```bash
+- Python 3.8+
+- pip
+- Virtual environment recommended
+
+### Setup
+
+1. Clone the repository:
+
+´´´bsh
+git clone https://github.com/yourusername/mini-pythia.git
+cd mini-pythia
+´´´
+
+2. Create and activate a virtual environment:
+
+´´´bsh
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-```
+´´´
 
-### Option A (recommended, minimal and robust)
+3. Install dependencies:
 
-Runs the full project with the built-in stats fallback (no SciPy required):
+Option A (minimal dependencies):
 
-```bash
+´´´bsh
 python -m pip install -r requirements.txt
-```
+´´´
 
-### Option B (full scientific stack)
+Option B (includes SciPy + Seaborn):
 
-Installs SciPy + Seaborn as well:
-
-```bash
+´´´bsh
 python -m pip install -r requirements-full.txt
-```
+´´´
 
-## How to run
+---
 
-From project root:
+## Usage
 
-```bash
+Run the full simulation pipeline:
+
+´´´bsh
 python src/Main.py
-```
+´´´
 
 For headless environments (no GUI):
 
-```bash
+´´´bsh
 MPLBACKEND=Agg python src/Main.py
-```
+´´´
 
-Optional conversion utility:
+Optional CSV conversion utility:
 
-```bash
+´´´bsh
 python src/ConvertCsv.py
-```
+´´´
 
-## Why this avoids the SciPy problem
+---
 
-Your previous error (`ImportError: cannot import name compose_quat`) is an environment binary mismatch. This project now avoids hard-failing on SciPy import by using a fallback statistical implementation in `src/Analysis.py`, and the README uses isolated, pinned dependencies to keep installs reproducible for other users.
+### Example Workflow
 
-## Notes
+1. Generate events.
+2. Output written to `outputs/OurOutput.txt`.
+3. Compare with reference sample `outputs/mumu_EW.txt`.
+4. Produce statistical test results.
+5. Generate static and animated 3D track plots.
 
-- Use `src/Main.py` as the canonical entry point.
-- Keep generated artifacts in `outputs/`.
+---
+
+## Physics Basis
+
+The simulation models Leading Order QED scattering.
+
+Unlike full-scale generators such as PYTHIA 8, which include QCD dynamics and electroweak interference, Mini PYTHIA isolates the clean leptonic channel μ⁺ μ⁻ → e⁺ e⁻. This allows precise verification of:
+
+- Energy–momentum conservation
+- Angular distributions
+- Lorentz invariance
+- Event-level observable comparison
+
+---
+
+## Statistical Analysis
+
+`src/Analysis.py` performs an event-by-event paired comparison.
+
+1. Extracts one observable per event (`cos(θ)`).
+2. Matches event *i* from both generators.
+3. Computes paired differences.
+4. Performs:
+   - SciPy paired t-test (`scipy.stats.ttest_rel`), or
+   - Manual fallback t-statistic with normal approximation.
+5. Converts p-value into Gaussian significance (σ).
+
+Interpretation:
+- ≥ 5σ → Discovery
+- ≥ 3σ → Evidence
+- ≥ 2σ → Tension
+- < 2σ → Compatible
+
+---
+
+## Project Structure
+
+´´´
+mini-pythia/
+│
+├── data/
+│   ├── particles.json
+│   └── processes.json
+│
+├── outputs/
+│   ├── mumu_EW.csv
+│   ├── mumu_EW.txt
+│   ├── OurOutput.txt
+│   └── *.png / *.gif
+│
+├── src/
+│   ├── Main.py
+│   ├── QedSimulation.py
+│   ├── MuonToElectron.py
+│   ├── Track.py
+│   ├── Analysis.py
+│   ├── Particle.py
+│   ├── ParticleClass.py
+│   ├── FourVector.py
+│   ├── ParticleRegistry.py
+│   ├── Process.py
+│   ├── PhysicsConstants.py
+│   ├── io.py
+│   └── ConvertCsv.py
+│
+├── requirements.txt
+├── requirements-full.txt
+└── README.md
+´´´
+
+---
+
+## Screenshots
+
+Static track example:
+
+´´´
+outputs/event_999_static.png
+´´´
+
+Animated track example:
+
+´´´
+outputs/event_999_animated.gif
+´´´
+
+Combined events visualization:
+
+´´´
+outputs/combined_events_static.png
+´´´
+
+---
+
+## Contributing
+
+This project is developed as part of PRA2031: Python Programming.
+
+To contribute:
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Follow PEP8 style guidelines.
+4. Ensure code runs with minimal dependencies.
+5. Submit a pull request with a clear description.
+
+Bug reports and feature requests should be submitted via GitHub Issues.
+
+---
+
+## License
+
+Academic project — not intended for commercial use.
+
+If reused or extended, proper attribution to the original authors is required.
+
+---
+
+## Contact
+
+For questions or feedback:
+
+- Open a GitHub Issue
+- Contact the project maintainers via university email
+
+---
+
+## Changelog
+
+### v1.0
+- Initial event generator
+- Statistical comparison module
+- 3D track visualization
+- SciPy fallback implementation
+
+---
+
+Last Updated: 27/02/2026

@@ -1,64 +1,75 @@
 import csv
 from pathlib import Path
 
-def convert_csv_to_txt(csv_file, txt_file):
-    project_root = Path(__file__).resolve().parent.parent
-    csv_path = project_root / "outputs" / csv_file
-    txt_path = project_root / "outputs" / txt_file
+"""
+This script converts standardized CSV data from PYTHIA into a custom 
+text-based format used for internal simulation analysis.
+"""
 
-    if not csv_path.exists():
-        print(f"Error: {csv_path} not found.")
+
+def ConvertCsvToTxt(csvFile, txtFile):
+    # Determine the project directory structure to locate input/output folders
+    projectRoot = Path(__file__).resolve().parent.parent
+    csvPath = projectRoot / "outputs" / csvFile
+    txtPath = projectRoot / "outputs" / txtFile
+
+    if not csvPath.exists():
+        print(f"Error: {csvPath} not found.")
         return
 
-    with open(csv_path, mode='r') as f:
-        reader = csv.DictReader(f)
-        events = {}
+    # A 'Dictionary' to group particles by their specific event ID.
+    # In a collider, one 'Event' is a single collision producing multiple particles.
+    eventsMap = {}
+
+    with open(csvPath, mode='r') as file:
+        reader = csv.DictReader(file)
         for row in reader:
-            ev_id = int(row['event'])
-            if ev_id not in events:
-                events[ev_id] = []
-            events[ev_id].append(row)
+            eventId = int(row['event'])
+            # If this is a new collision we haven't seen, create a new list for it
+            if eventId not in eventsMap:
+                eventsMap[eventId] = []
+            eventsMap[eventId].append(row)
 
-    with open(txt_path, mode='w') as f:
-        for ev_id in sorted(events.keys()):
-            f.write(f"Event {ev_id}\n")
-            for part in events[ev_id]:
-                # Format: {event_id} | {particle_id} | {name} | (E: {E}, px: {px}, py: {py}, pz: {pz})
-                # Event ID is 3 digits padded with zeros
-                # Particle ID is 3 characters wide, right-aligned
-                # Particle Name is 12 characters wide
-                # Four-momentum components formatted with %8.3f
-                
-                event_id_str = f"{ev_id:03d}"
-                pdg_id = int(part['id'])
-                name = part['name']
-                
-                # In OurOutput.txt, "mother" info is used as Name for visualization consistency 
-                # but based on previous solution summary, it was mapping name.
-                # Let's look at OurOutput.txt again: 
-                # 000 |  13 | Initial Beam | (E:   45.590, px:    0.000, py:    0.000, pz:   45.590)
-                # In mumu_EW.csv, the particles have names like "mu-", "mu+", "W-", etc.
-                # However, the previous conversion used fixed columns.
-                
-                # Check status/mother to determine if it's Initial Beam or Collision?
-                # Actually, the previous solution summary said:
-                # {event_id} | {particle_id} | {name} | (E: {E}, px: {px}, py: {py}, pz: {pz})
-                
-                name_col = name
+    # Begin writing the formatted text file
+    with open(txtPath, mode='w') as file:
+        # Sort events numerically to ensure progression is consistent
+        for eventId in sorted(eventsMap.keys()):
+            # Header line that the SimulatorComparison class uses to split data
+            file.write(f"Event {eventId}\n")
+
+            for part in eventsMap[eventId]:
+                # eventIdStr: Formats the ID as 3 digits (e.g., 001 instead of 1)
+                eventIdStr = f"{eventId:03d}"
+                pdgId = int(part['id'])
+                particleName = part['name']
+
+                # Logic to label the "Lifecycle" of the particle:
+                # 'Initial Beam' particles are the ones colliding.
+                # 'Collision' (or Final State) particles are what fly out into the detectors.
+                nameColumn = particleName
                 if part['isFinal'] == '0' and part['mother1'] == '0':
-                    name_col = "Initial Beam"
+                    nameColumn = "Initial Beam"
                 elif part['isFinal'] == '1':
-                    name_col = "Collision"
+                    nameColumn = "Collision"
 
-                e = float(part['E'])
-                px = float(part['px'])
-                py = float(part['py'])
-                pz = float(part['pz'])
+                # Extract the Four-Momentum: A mathematical vector (E, px, py, pz)
+                # that fully describes the particle's energy and direction.
+                energyVal = float(part['E'])
+                pxVal = float(part['px'])
+                pyVal = float(part['py'])
+                pzVal = float(part['pz'])
 
-                f.write(f"    {event_id_str} | {pdg_id:>3} | {name_col:<12} | (E: {e:8.3f}, px: {px:8.3f}, py: {py:8.3f}, pz: {pz:8.3f})\n")
-            f.write("\n")
+                # Write the line with specific padding (e.g., :8.3f) so columns align vertically.
+                # This makes the TXT file human-readable and easy for the 're' (regex) tool to parse.
+                file.write(f"    {eventIdStr} | {pdgId:>3} | {nameColumn:<12} | "
+                           f"(E: {energyVal:8.3f}, px: {pxVal:8.3f}, py: {pyVal:8.3f}, pz: {pzVal:8.3f})\n")
 
-    print(f"Successfully converted {csv_path} to {txt_path}")
+            # Add a newline between events for visual clarity
+            file.write("\n")
 
+    print(f"Successfully converted {csvPath} to {txtPath}")
+
+
+# Standard Python entry point to run the conversion
 if __name__ == "__main__":
-    convert_csv_to_txt("mumu_EW.csv", "mumu_EW.txt")
+    ConvertCsvToTxt("mumu_EW.csv", "mumu_EW.txt")

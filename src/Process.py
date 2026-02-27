@@ -1,68 +1,82 @@
 class Process:
-    """Represents a physics process definition loaded from JSON."""
+    """
+    A blueprint for any particle interaction.
+    It defines who enters the collision and who leaves it.
+    """
 
     def __init__(self, name, incoming, outgoing, model, notes=""):
-        self.name = name
-        self.incoming = incoming
-        self.outgoing = outgoing
-        self.model = model
-        self.notes = notes
+        # We use setters to ensure the data passed in is valid from the start.
+        self.Name = name
+        self.Incoming = incoming
+        self.Outgoing = outgoing
+        self.Model = model
+        self.Notes = notes
 
     @property
-    def name(self):
-        return self._name
+    def Name(self):
+        return self.internalName
 
-    @name.setter
-    def name(self, value):
+    @Name.setter
+    def Name(self, value):
+        # Ensures the process has a readable name like 'Muon Annihilation'
         if not isinstance(value, str) or not value:
             raise ValueError("name must be a non-empty string")
-        self._name = value
+        self.internalName = value
 
     @property
-    def incoming(self):
-        return self._incoming
+    def Incoming(self):
+        return self.internalIncoming
 
-    @incoming.setter
-    def incoming(self, value):
+    @Incoming.setter
+    def Incoming(self, value):
+        # These are the 'Initial State' particles (the ones that collide).
         if not isinstance(value, list) or not all(isinstance(x, str) for x in value):
             raise ValueError("incoming must be a list of strings")
-        self._incoming = value
+        self.internalIncoming = value
 
     @property
-    def outgoing(self):
-        return self._outgoing
+    def Outgoing(self):
+        return self.internalOutgoing
 
-    @outgoing.setter
-    def outgoing(self, value):
+    @Outgoing.setter
+    def Outgoing(self, value):
+        # These are the 'Final State' particles (the result of the collision).
         if not isinstance(value, list) or not all(isinstance(x, str) for x in value):
             raise ValueError("outgoing must be a list of strings")
-        self._outgoing = value
+        self.internalOutgoing = value
 
     @property
-    def model(self):
-        return self._model
+    def Model(self):
+        return self.internalModel
 
-    @model.setter
-    def model(self, value):
+    @Model.setter
+    def Model(self, value):
+        # Specifies the physics framework, such as 'Standard Model' or 'QED'.
         if not isinstance(value, str) or not value:
             raise ValueError("model must be a non-empty string")
-        self._model = value
+        self.internalModel = value
 
     @property
-    def notes(self):
-        return self._notes
+    def Notes(self):
+        return self.internalNotes
 
-    @notes.setter
-    def notes(self, value):
+    @Notes.setter
+    def Notes(self, value):
+        # Extra context for the researcher (e.g., 'Validated against 2024 data').
         if not isinstance(value, str):
             raise ValueError("notes must be a string")
-        self._notes = value
+        self.internalNotes = value
 
     def __repr__(self):
-        return f"Process(name={self.name!r}, model={self.model!r})"
+        """Returns a technical string representation of the object."""
+        return f"Process(name={self.Name!r}, model={self.Model!r})"
 
     @classmethod
-    def from_dict(cls, data):
+    def FromDict(cls, data):
+        """
+        A 'Factory Method' that creates a Process object directly from
+        a dictionary (useful when reading from JSON files).
+        """
         return cls(
             name=data["name"],
             incoming=data["incoming"],

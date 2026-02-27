@@ -121,5 +121,158 @@
         ]
       }
     ]
+  },
+  {
+    "name": "W+",
+    "pdg": 24,
+    "particle_class": "boson",
+    "mass": 80.379,
+    "charge": 1.0,
+    "stable": false,
+    "decay_modes": []
+  },
+  {
+    "name": "W-",
+    "pdg": -24,
+    "particle_class": "boson",
+    "mass": 80.379,
+    "charge": -1.0,
+    "stable": false,
+    "decay_modes": []
+  },
+  {
+    "name": "Z0",
+    "pdg": 23,
+    "particle_class": "boson",
+    "mass": 91.1876,
+    "charge": 0.0,
+    "stable": false,
+    "decay_modes": []
+  },
+  {
+    "name": "c",
+    "pdg": 4,
+    "particle_class": "quark",
+    "mass": 1.27,
+    "charge": 0.6666666666666666,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "cbar",
+    "pdg": -4,
+    "particle_class": "quark",
+    "mass": 1.27,
+    "charge": -0.6666666666666666,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "d",
+    "pdg": 1,
+    "particle_class": "quark",
+    "mass": 0.0047,
+    "charge": -0.3333333333333333,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "dbar",
+    "pdg": -1,
+    "particle_class": "quark",
+    "mass": 0.0047,
+    "charge": 0.3333333333333333,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "nu_ebar",
+    "pdg": -12,
+    "particle_class": "neutrino",
+    "mass": 0.0,
+    "charge": 0.0,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "nu_mubar",
+    "pdg": -14,
+    "particle_class": "neutrino",
+    "mass": 0.0,
+    "charge": 0.0,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "nu_tau",
+    "pdg": 16,
+    "particle_class": "neutrino",
+    "mass": 0.0,
+    "charge": 0.0,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "nu_taubar",
+    "pdg": -16,
+    "particle_class": "neutrino",
+    "mass": 0.0,
+    "charge": 0.0,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "tau+",
+    "pdg": -15,
+    "particle_class": "lepton",
+    "mass": 1.77686,
+    "charge": 1.0,
+    "stable": false,
+    "decay_modes": [
+      {
+        "br": 1.0,
+        "products": [
+          "mu+",
+          "nu_taubar",
+          "nu_mu"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "tau-",
+    "pdg": 15,
+    "particle_class": "lepton",
+    "mass": 1.77686,
+    "charge": -1.0,
+    "stable": false,
+    "decay_modes": [
+      {
+        "br": 1.0,
+        "products": [
+          "mu-",
+          "nu_tau",
+          "nu_mubar"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "u",
+    "pdg": 2,
+    "particle_class": "quark",
+    "mass": 0.0022,
+    "charge": 0.6666666666666666,
+    "stable": true,
+    "decay_modes": []
+  },
+  {
+    "name": "ubar",
+    "pdg": -2,
+    "particle_class": "quark",
+    "mass": 0.0022,
+    "charge": -0.6666666666666666,
+    "stable": true,
+    "decay_modes": []
   }
 ]

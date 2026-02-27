@@ -1,7 +1,7 @@
 # PRA2031 Particle Physics Project
 
-This repository simulates a toy high-energy physics process (`mu+ mu- -> e+ e-`), compares the generated sample against a reference sample, and visualizes reconstructed tracks.
-
+## Physics Basis
+This simulation models Leading Order (LO) QED interactions. Unlike a full-scale generator like Pythia 8, which includes Quantum Chromodynamics (QCD) and electroweak interference, this project focuses on the clean leptonic channel mu^+ mu^- to e^+ e^-. This allows for high-precision verification of relativistic kinematics and angular distributions without the background noise of hadronization.
 ## What it does
 
 1. Loads particle definitions from JSON.

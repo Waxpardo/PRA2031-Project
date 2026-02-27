@@ -1,6 +1,3 @@
-import math
-import numpy as np
-
 # Define a class to represent particle properties in physics
 class ParticleClass:
     def __init__(self, name, pdg, particle_class, mass, charge, stable, decay_modes):
@@ -77,8 +74,7 @@ class ParticleClass:
     def charge(self, charge):
         if not isinstance(charge, (int, float)):
             raise TypeError("charge must be a number")
-        self._charge = charge
-        
+        self._charge = float(charge)
 
     # -------------------
     # Property: stable
@@ -106,39 +102,47 @@ class ParticleClass:
             raise TypeError("decay_modes must be a list of dictionaries")
 
         total_br = 0.0
+        normalized_modes = []
 
         for mode in decay_modes:
             if not isinstance(mode, dict):
                 raise TypeError("Each decay mode must be a dictionary")
 
-            if "br" not in mode or "products" not in mode:
-                raise ValueError("Each decay mode must contain 'br' and 'products'")
+            if "br" not in mode:
+                raise ValueError("Each decay mode must contain 'br'")
+
+            if "products" in mode:
+                products = mode["products"]
+            elif "daughters" in mode:
+                products = mode["daughters"]
+            else:
+                raise ValueError("Each decay mode must contain 'products' or 'daughters'")
 
             br = mode["br"]
-            products = mode["products"]
-
             if not isinstance(br, (int, float)):
                 raise TypeError("Branching ratio must be a number")
-
             if br < 0 or br > 1:
                 raise ValueError("Branching ratio must be between 0 and 1")
 
-            total_br += br
-
             if not isinstance(products, list):
-                raise TypeError("'products' must be a list of PDG IDs")
+                raise TypeError("'products' must be a list of PDG IDs or particle names")
 
-            for pdg in products:
-                if not isinstance(pdg, int):
-                    raise TypeError("Decay product PDG IDs must be integers")
+            normalized_products = []
+            for product in products:
+                if not isinstance(product, (int, str)):
+                    raise TypeError("Decay products must be integers (PDG) or strings (particle names)")
+                if isinstance(product, str) and not product:
+                    raise ValueError("Decay product names must be non-empty strings")
+                normalized_products.append(product)
+
+            total_br += float(br)
+            normalized_modes.append({"br": float(br), "products": normalized_products})
 
         if total_br > 1.000001:
             raise ValueError(f"Total branching ratio exceeds 1: {total_br}")
 
-        self._decay_modes = decay_modes
+        self._decay_modes = normalized_modes
 
-
- 
     def __repr__(self):
         return f"ParticleClass(name={self.name!r}, pdg={self.pdg})"
 

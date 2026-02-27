@@ -1,6 +1,6 @@
-import math
-from FourVector.py import FourVector
-from ParticleClass.py import ParticleClass
+from src.FourVector import FourVector
+from src.ParticleClass import ParticleClass
+
 
 class Particle:
     """
@@ -28,7 +28,7 @@ class Particle:
             raise TypeError("particle_type must be a ParticleClass object")
         self._particle_type = particle_type
 
-    # Pardicle Data Group (pdg)
+    # Particle Data Group (pdg)
     @property
     def pdg(self):
         return self.particle_type.pdg
@@ -38,30 +38,25 @@ class Particle:
     def mass(self):
         return self.particle_type.mass
 
-
     # Charge
     @property
     def charge(self):
         return self.particle_type.charge
-
 
     # Particle class
     @property
     def particle_class(self):
         return self.particle_type.particle_class
 
-
     # Stable
     @property
     def stable(self):
         return self.particle_type.stable
 
-
     # Decay modes
     @property
     def decay_modes(self):
         return self.particle_type.decay_modes
-
 
     # Four momentum (p4)
     @property
@@ -75,29 +70,36 @@ class Particle:
         self._p4 = p4
 
     @property
-    def e(self): return self.p4.e
-    @property
-    def px(self): return self.p4.px
-    @property
-    def py(self): return self.p4.py
-    @property
-    def pz(self): return self.p4.pz
-    @property
-    def inv_mass(self): return self.p4.inv_mass
+    def e(self):
+        return self.p4.e
 
+    @property
+    def px(self):
+        return self.p4.px
 
+    @property
+    def py(self):
+        return self.p4.py
+
+    @property
+    def pz(self):
+        return self.p4.pz
+
+    @property
+    def inv_mass(self):
+        return self.p4.inv_mass
 
     # Pseudorapidity (eta)
     @property
     def eta(self):
         return self.p4.eta
 
-    # azimuthal angle (phi)
+    # Azimuthal angle (phi)
     @property
     def phi(self):
         return self.p4.phi
 
-    # Trnasverse momentum (pt)
+    # Transverse momentum (pt)
     @property
     def pt(self):
         return self.p4.pt
@@ -130,7 +132,5 @@ class Particle:
         mother_str = "Initial" if self.mother is None else f"PDG {self.mother.pdg}"
         return f"{eid} | {self.pdg:>6} | {mother_str:<10} | {self.p4}"
 
-    
     def __repr__(self):
-    return f"Particle(pdg={self.pdg}, p4={self.p4!r}, eventID={self.eventID})"
-
+        return f"Particle(pdg={self.pdg}, p4={self.p4!r}, eventID={self.eventID})"

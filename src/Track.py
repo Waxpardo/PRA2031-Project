@@ -1,11 +1,14 @@
 import math
-from Particle import Particle
-from FourVector import FourVector
+
+from src.FourVector import FourVector
+from src.Particle import Particle
+
 
 class Track:
     """
     Represents a reconstructed particle track (path) with multiple particles.
     """
+
     def __init__(self, particles=None):
         self.particles = particles if particles else []
 
@@ -61,9 +64,7 @@ class Track:
     def __str__(self):
         return f"Track(eventID={self.eventID}, particles={len(self._particles)}, total_p4={self.total_p4})"
 
-# -----------------------------
-# Track following algorithm
-# -----------------------------
+
 class TrackFollowing:
     """
     Reconstructs tracks from an event (list of Particle objects).
@@ -84,17 +85,13 @@ class TrackFollowing:
         self.tracks = []
         particle_to_track = {}
 
-        # Step 1: loop over all particles in the event
         for particle in event:
-            # If particle has a mother, inherit mother's track
             if particle.mother and particle.mother in particle_to_track:
                 track = particle_to_track[particle.mother]
             else:
-                # Start a new track
                 track = Track()
                 self.tracks.append(track)
 
-            # Add particle to track
             track.add_particle(particle)
             particle_to_track[particle] = track
 

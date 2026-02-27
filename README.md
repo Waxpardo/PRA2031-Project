@@ -25,11 +25,8 @@ Mini PYTHIA is an educational Monte Carlo event generator that simulates the pro
 
 It generates events, writes them to file, compares them statistically to a reference sample, and visualizes reconstructed particle tracks in 3D. The project is designed for educational purposes and demonstrates relativistic kinematics, event generation, and statistical validation in a simplified framework.
 
----
-
 ## Background: What is PYTHIA?
 
-´´´ 
 PYTHIA is a widely used high-energy physics event generator developed for simulating particle collisions at experiments such as the Large Hadron Collider (LHC). It models the full chain of events in proton–proton collisions, including:
 
 - Hard scattering processes
@@ -39,9 +36,6 @@ PYTHIA is a widely used high-energy physics event generator developed for simula
 - Underlying event physics
 
 Mini PYTHIA does **not** aim to reproduce the full complexity of PYTHIA 8. Instead, it focuses on a clean leptonic QED channel to demonstrate core Monte Carlo principles without QCD hadronization or detector effects.
-´´´
-
----
 
 ## Features
 
@@ -52,8 +46,6 @@ Mini PYTHIA does **not** aim to reproduce the full complexity of PYTHIA 8. Inste
 - Static and animated 3D track visualization
 - Modular and extensible architecture
 - Built-in fallback if SciPy is unavailable
-
----
 
 ## Installation
 
@@ -94,8 +86,6 @@ Option B (includes SciPy + Seaborn):
 python -m pip install -r requirements-full.txt
 ´´´
 
----
-
 ## Usage
 
 Run the full simulation pipeline:
@@ -116,8 +106,6 @@ Optional CSV conversion utility:
 python src/ConvertCsv.py
 ´´´
 
----
-
 ### Example Workflow
 
 1. Generate events.
@@ -126,7 +114,6 @@ python src/ConvertCsv.py
 4. Produce statistical test results.
 5. Generate static and animated 3D track plots.
 
----
 
 ## Physics Basis
 
@@ -139,7 +126,6 @@ Unlike full-scale generators such as PYTHIA 8, which include QCD dynamics and el
 - Lorentz invariance
 - Event-level observable comparison
 
----
 
 ## Statistical Analysis
 
@@ -159,7 +145,6 @@ Interpretation:
 - ≥ 2σ → Tension
 - < 2σ → Compatible
 
----
 
 ## Project Structure
 
@@ -196,8 +181,6 @@ mini-pythia/
 └── README.md
 ´´´
 
----
-
 ## Screenshots
 
 Static track example:
@@ -218,7 +201,6 @@ Combined events visualization:
 outputs/combined_events_static.png
 ´´´
 
----
 
 ## Contributing
 
@@ -234,7 +216,6 @@ To contribute:
 
 Bug reports and feature requests should be submitted via GitHub Issues.
 
----
 
 ## License
 
@@ -242,7 +223,6 @@ Academic project — not intended for commercial use.
 
 If reused or extended, proper attribution to the original authors is required.
 
----
 
 ## Contact
 
@@ -251,7 +231,6 @@ For questions or feedback:
 - Open a GitHub Issue
 - Contact the project maintainers via university email
 
----
 
 ## Changelog
 
@@ -261,6 +240,5 @@ For questions or feedback:
 - 3D track visualization
 - SciPy fallback implementation
 
----
 
 Last Updated: 27/02/2026

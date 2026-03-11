@@ -202,7 +202,12 @@ class SimulatorComparison:
             "significant": significant,
             "backend": backend,
         }
-
+    def KSTest(self):
+        stat, pVal = stats.ks_2samp(self.genOur, self.genPythia)
+        sigma, level, significant = self.InterpretSignificance(pVal)
+        return {"test": "KS Test", "tStat": stat, "pVal": pVal,
+                "sigma": sigma, "level": level, "significant": significant}
+        
     def PrintResult(self, result):
         """Formats the statistical findings for the console."""
         print("=" * 60)

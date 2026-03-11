@@ -1,10 +1,23 @@
-import numpy as np
-from scipy import stats
-import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy.stats import norm
-from pathlib import Path
+import math
 import re
+from pathlib import Path
+from statistics import NormalDist
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+try:
+    import seaborn as sns
+except Exception:
+    sns = None
+
+try:
+    from scipy import stats as scipy_stats
+except Exception:
+    scipy_stats = None
+
+
+STANDARD_NORMAL = NormalDist()
 
 
 class SimulatorComparison:
@@ -20,8 +33,8 @@ class SimulatorComparison:
 
         # Convert to NumPy arrays to allow for fast vector math
         # and statistical operations.
-        self.genOur = np.array(self.genOur)
-        self.genPythia = np.array(self.genPythia)
+        self.genOur = np.array(self.genOur, dtype=float)
+        self.genPythia = np.array(self.genPythia, dtype=float)
 
         # Labels for the X-axis of the final comparison plots
         if labels is not None:
@@ -44,7 +57,7 @@ class SimulatorComparison:
 
         observables = []
 
-        with open(filePath, "r") as file:
+        with open(filePath, "r", encoding="utf-8") as file:
             lines = file.readlines()
 
         currentEvent = []
@@ -93,7 +106,7 @@ class SimulatorComparison:
         numbers = re.findall(r"[-+]?\d*\.\d+|\d+", selectedLine)
 
         if len(numbers) < 4:
-            raise ValueError(f"Could not parse momentum from line:\n{selectedLine}")
+            raise ValueError(f"Could not parse momentum from line:\\n{selectedLine}")
 
         # E=Energy, px/py/pz = Momentum components in 3D space
         energy, px, py, pz = map(float, numbers[:4])
@@ -115,14 +128,90 @@ class SimulatorComparison:
         self.delta = self.genOur - self.genPythia
         return self.delta
 
+    def _two_sided_normal_pvalue(self, stat):
+        return max(0.0, min(1.0, 2.0 * (1.0 - STANDARD_NORMAL.cdf(abs(float(stat))))))
+
+    def _sanitize_result(self, stat, pVal):
+        stat = float(stat)
+        pVal = float(pVal)
+
+        if np.isnan(stat) or np.isnan(pVal):
+            delta = self.ComputeDifference()
+            if np.allclose(delta, 0.0):
+                return 0.0, 1.0
+
+        return stat, pVal
+
+    def _manual_paired_t_test(self):
+        delta = self.ComputeDifference()
+        n = delta.size
+
+        if n < 2:
+            raise ValueError("At least two paired events are required for the t-test.")
+
+        meanDelta = float(np.mean(delta))
+        stdDelta = float(np.std(delta, ddof=1))
+
+        if np.isclose(stdDelta, 0.0):
+            if np.isclose(meanDelta, 0.0):
+                return 0.0, 1.0
+            return math.copysign(math.inf, meanDelta), 0.0
+
+        tStat = meanDelta / (stdDelta / np.sqrt(n))
+        pVal = self._two_sided_normal_pvalue(tStat)
+        return tStat, pVal
+
+    def _kolmogorov_pvalue(self, dStat, n1, n2):
+        if dStat <= 0:
+            return 1.0
+
+        effectiveN = math.sqrt((n1 * n2) / (n1 + n2))
+        if effectiveN == 0:
+            return 1.0
+
+        lam = (effectiveN + 0.12 + 0.11 / effectiveN) * dStat
+        total = 0.0
+
+        for k in range(1, 200):
+            term = math.exp(-2.0 * (k ** 2) * (lam ** 2))
+            total += ((-1) ** (k - 1)) * term
+            if term < 1e-12:
+                break
+
+        return max(0.0, min(1.0, 2.0 * total))
+
+    def _manual_ks_test(self):
+        sample1 = np.sort(self.genOur)
+        sample2 = np.sort(self.genPythia)
+        n1 = sample1.size
+        n2 = sample2.size
+
+        if n1 == 0 or n2 == 0:
+            raise ValueError("Both samples must contain at least one event for the KS test.")
+
+        combined = np.concatenate((sample1, sample2))
+        cdf1 = np.searchsorted(sample1, combined, side="right") / n1
+        cdf2 = np.searchsorted(sample2, combined, side="right") / n2
+        dStat = float(np.max(np.abs(cdf1 - cdf2)))
+        pVal = self._kolmogorov_pvalue(dStat, n1, n2)
+        return dStat, pVal
+
     def PvalueToSigma(self, pVal):
         """
         Converts a probability (p-value) into 'Sigma'.
         In physics, 5-sigma is the 'Gold Standard' for claiming a discovery.
         """
+        if np.isnan(pVal):
+            return np.nan
         if pVal <= 0:
             return np.inf
-        return norm.isf(pVal / 2)
+        if pVal >= 1:
+            return 0.0
+
+        tailProbability = 1.0 - pVal / 2.0
+        tailProbability = min(math.nextafter(1.0, 0.0), tailProbability)
+        tailProbability = max(math.nextafter(0.0, 1.0), tailProbability)
+        return STANDARD_NORMAL.inv_cdf(tailProbability)
 
     def InterpretSignificance(self, pVal):
         """Translates statistical numbers into physics-standard terminology."""
@@ -148,8 +237,18 @@ class SimulatorComparison:
         Checks if the mean difference between the two simulators is zero.
         Used to see if our generator has a 'bias' compared to Pythia.
         """
-        tStat, pVal = stats.ttest_rel(self.genOur, self.genPythia)
+        implementation = "Fallback"
 
+        if scipy_stats is not None:
+            try:
+                tStat, pVal = scipy_stats.ttest_rel(self.genOur, self.genPythia)
+                implementation = "SciPy"
+            except Exception:
+                tStat, pVal = self._manual_paired_t_test()
+        else:
+            tStat, pVal = self._manual_paired_t_test()
+
+        tStat, pVal = self._sanitize_result(tStat, pVal)
         sigma, level, significant = self.InterpretSignificance(pVal)
 
         return {
@@ -158,7 +257,35 @@ class SimulatorComparison:
             "pVal": pVal,
             "sigma": sigma,
             "level": level,
-            "significant": significant
+            "significant": significant,
+            "implementation": implementation,
+        }
+
+    def KSTest(self):
+        """Compares the full observable distributions of both generators."""
+        implementation = "Fallback"
+
+        if scipy_stats is not None:
+            try:
+                result = scipy_stats.ks_2samp(self.genOur, self.genPythia)
+                dStat, pVal = result.statistic, result.pvalue
+                implementation = "SciPy"
+            except Exception:
+                dStat, pVal = self._manual_ks_test()
+        else:
+            dStat, pVal = self._manual_ks_test()
+
+        dStat, pVal = self._sanitize_result(dStat, pVal)
+        sigma, level, significant = self.InterpretSignificance(pVal)
+
+        return {
+            "test": "Kolmogorov-Smirnov test",
+            "dStat": dStat,
+            "pVal": pVal,
+            "sigma": sigma,
+            "level": level,
+            "significant": significant,
+            "implementation": implementation,
         }
 
     def PrintResult(self, result):
@@ -166,9 +293,16 @@ class SimulatorComparison:
         print("=" * 60)
         print(result["test"])
         print("-" * 60)
+
+        if "tStat" in result:
+            print(f"statistic    : {result['tStat']:.4f}")
+        elif "dStat" in result:
+            print(f"statistic    : {result['dStat']:.4f}")
+
         print(f"p-value      : {result['pVal']:.3e}")
         print(f"significance : {result['sigma']:.2f} σ")
         print(f"interpretation: {result['level']}")
+        print(f"implementation: {result.get('implementation', 'N/A')}")
 
         if result["significant"]:
             print("→ Null hypothesis rejected (Generators are DIFFERENT)")
@@ -177,12 +311,21 @@ class SimulatorComparison:
 
     def PlotDistributions(self):
         """Creates a visual overlay of both generators to see if the shapes match."""
-        # KDE (Kernel Density Estimate) creates a smooth line over the histogram bars
-        sns.histplot(self.genOur, label="Our Generator", kde=True, stat="density")
-        sns.histplot(self.genPythia, label="Pythia", kde=True, stat="density")
+        plt.figure()
+
+        # Seaborn is optional; the base requirements only guarantee Matplotlib.
+        if sns is not None:
+            sns.histplot(self.genOur, label="Our Generator", kde=True, stat="density")
+            sns.histplot(self.genPythia, label="Pythia", kde=True, stat="density")
+        else:
+            bins = 30
+            plt.hist(self.genOur, bins=bins, density=True, alpha=0.5, label="Our Generator")
+            plt.hist(self.genPythia, bins=bins, density=True, alpha=0.5, label="Pythia")
+
         plt.legend()
         plt.xlabel(self.labels[0])
         plt.title("Generator Comparison")
+        plt.tight_layout()
         plt.show()
 
     def Run(self):
@@ -202,9 +345,3 @@ class SimulatorComparison:
 
         print("\nPlotting distributions...")
         self.PlotDistributions()
-
-    def KSTest(self):
-        stat, pVal = stats.ks_2samp(self.genOur, self.genPythia)
-        sigma, level, significant = self.InterpretSignificance(pVal)
-        return {"test": "KS Test", "tStat": stat, "pVal": pVal,
-                "sigma": sigma, "level": level, "significant": significant}

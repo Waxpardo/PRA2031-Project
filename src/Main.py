@@ -87,6 +87,25 @@ if generator.eventList:
         savePath=outputsDir / "combined_events_static.png"
     )
 
+    # 4. Sequential Multi-Collision Visualization (Animated GIF)
+    # Stacks several collisions in the same interaction region to mimic a collider display.
+    nSequence = min(8, len(generator.eventList))
+    sequenceParticles = []
+    for i in range(nSequence):
+        ev = generator.eventList[i]
+        sequenceParticles.extend(ev.initialParticles + ev.finalParticles)
+
+    tracksSequence = tracker.Solve(sequenceParticles)
+    visualizerSequence = TrackVisualizer(tracksSequence)
+
+    print(f"Animating stacked collider view for first {nSequence} events...")
+    visualizerSequence.AnimateCollisionSequence(
+        title=f"Sequential Collider View (First {nSequence} Events)",
+        framesPerEvent=28,
+        holdFrames=4,
+        savePath=outputsDir / "collider_sequence.gif"
+    )
+
 """
 CROSS-VALIDATION
 Compares our custom generator's math against the PYTHIA physics engine.

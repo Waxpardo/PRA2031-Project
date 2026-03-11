@@ -23,7 +23,7 @@ A lightweight Python-based particle physics event generator inspired by PYTHIA.
 Mini PYTHIA is an educational Monte Carlo event generator that simulates the process  
 μ⁺ μ⁻ → e⁺ e⁻ at Leading Order (LO) in Quantum Electrodynamics (QED).
 
-It generates events, writes them to file, compares them statistically to a reference sample, and visualizes reconstructed particle tracks in 3D. The project is designed for educational purposes and demonstrates relativistic kinematics, event generation, and statistical validation in a simplified framework.
+It generates events, writes them to file, compares them statistically to a reference sample, and visualizes reconstructed particle tracks in a consistent dark 3D collider view. The project is designed for educational purposes and demonstrates relativistic kinematics, event generation, statistical validation, and event visualization in a simplified framework.
 
 ## Background: What is PYTHIA?
 
@@ -45,7 +45,8 @@ Mini PYTHIA does **not** aim to reproduce the full complexity of PYTHIA 8. Inste
 - Event-by-event statistical comparison with reference sample
 - Paired hypothesis testing with SciPy when available
 - Manual statistical fallback if SciPy is unavailable or broken
-- Static and animated 3D track visualization
+- Static, animated, and sequential multi-collision 3D track visualization
+- Consistent dark collider-style theme across saved track snapshots and GIFs
 - Saved comparison plot in `outputs/generator_comparison.png`
 - Short console preview for demos while still writing all events to file
 - Modular and extensible architecture
@@ -135,7 +136,8 @@ python src/ConvertCsv.py
 4. Compare with reference sample `outputs/mumu_EW.txt`.
 5. Print statistical test results with SciPy or the built-in manual fallback.
 6. Save the comparison plot to `outputs/generator_comparison.png`.
-7. Generate static and animated 3D track plots.
+7. Generate dark-themed static and animated track visualizations.
+8. Save a sequential stacked-collision GIF to `outputs/collider_sequence.gif`.
 
 
 ## Physics Basis
@@ -188,6 +190,7 @@ mini-pythia/
 │   ├── mumu_EW.txt
 │   ├── OurOutput.txt
 │   ├── generator_comparison.png
+│   ├── collider_sequence.gif
 │   └── *.png / *.gif
 │
 ├── src/
@@ -237,6 +240,14 @@ outputs/combined_events_static.png
 
 ´´´
 
+Sequential collider-style animation:
+
+´´´
+
+outputs/collider_sequence.gif
+
+´´´
+
 Generator comparison plot:
 
 ´´´
@@ -278,6 +289,12 @@ For questions or feedback:
 
 ## Changelog
 
+### v1.2
+- Added a sequential multi-collision animator for stacked collider-style event displays
+- Saved the new stacked animation to `outputs/collider_sequence.gif`
+- Unified static plots and track animations under the same dark collider theme
+- Regenerated track snapshots and GIFs with consistent black backgrounds
+
 ### v1.1
 - Added deterministic simulation seed for reproducible demos
 - Reduced console output to a short event preview
@@ -292,4 +309,4 @@ For questions or feedback:
 - SciPy fallback implementation
 
 
-Last Updated: 27/02/2026
+Last Updated: 11/03/2026

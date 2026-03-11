@@ -95,3 +95,8 @@ PDG 11 refers to Electrons; we are checking if their angular distribution matche
 # pdgToFind=11 tells the analyzer to specifically look for Electron data
 comparison = SimulatorComparison(ourFile, pythiaFile, labels=["cos(theta)"], pdgToFind=11)
 comparison.Run()
+
+print("KOLMOGOROV-SMIRNOV TEST ANALYSIS")
+print("="*60)
+ks_result = comparison.KSTest()
+comparison.PrintResult(ks_result)

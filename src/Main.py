@@ -105,7 +105,6 @@ if generator.eventList:
         holdFrames=4,
         savePath=outputsDir / "collider_sequence.gif"
     )
-
 """
 CROSS-VALIDATION
 Compares our custom generator's math against the PYTHIA physics engine.

@@ -1,10 +1,20 @@
-import numpy as np
-from scipy import stats
-import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy.stats import norm
-from pathlib import Path
+import math
 import re
+from pathlib import Path
+from statistics import NormalDist
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+try:
+    from scipy import stats as scipy_stats
+except Exception:
+    scipy_stats = None
+
+try:
+    import seaborn as sns
+except Exception:
+    sns = None
 
 
 class SimulatorComparison:
@@ -89,14 +99,15 @@ class SimulatorComparison:
         if selectedLine is None:
             selectedLine = eventLines[-2]
 
-        # Use Regular Expressions to find numbers (Energy and Momentum) in the string
+        # The line prefix contains the event ID and PDG code, so only the
+        # final four numeric values belong to the rendered four-vector.
         numbers = re.findall(r"[-+]?\d*\.\d+|\d+", selectedLine)
 
         if len(numbers) < 4:
             raise ValueError(f"Could not parse momentum from line:\n{selectedLine}")
 
         # E=Energy, px/py/pz = Momentum components in 3D space
-        energy, px, py, pz = map(float, numbers[:4])
+        _, px, py, pz = map(float, numbers[-4:])
 
         # Calculate the total length of the momentum vector (the 'speed' of the particle)
         momentumMag = np.sqrt(px ** 2 + py ** 2 + pz ** 2)
@@ -122,7 +133,7 @@ class SimulatorComparison:
         """
         if pVal <= 0:
             return np.inf
-        return norm.isf(pVal / 2)
+        return NormalDist().inv_cdf(1 - (pVal / 2))
 
     def InterpretSignificance(self, pVal):
         """Translates statistical numbers into physics-standard terminology."""
@@ -143,12 +154,42 @@ class SimulatorComparison:
 
         return sigma, level, significant
 
+    def ManualPairedTTest(self):
+        """
+        Fallback paired t-test when SciPy is unavailable.
+        Uses the usual t-statistic and a normal approximation for the p-value.
+        """
+        delta = self.ComputeDifference()
+        nObs = len(delta)
+
+        if nObs < 2:
+            raise ValueError("Need at least two paired observations for a t-test.")
+
+        meanDelta = float(np.mean(delta))
+        stdDelta = float(np.std(delta, ddof=1))
+
+        if stdDelta == 0.0:
+            if meanDelta == 0.0:
+                return 0.0, 1.0, "Manual fallback (zero variance)"
+            return np.inf, 0.0, "Manual fallback (zero variance)"
+
+        tStat = meanDelta / (stdDelta / math.sqrt(nObs))
+        pVal = math.erfc(abs(tStat) / math.sqrt(2))
+        return tStat, pVal, "Manual fallback (normal approximation)"
+
     def PairedTTest(self):
         """
         Checks if the mean difference between the two simulators is zero.
         Used to see if our generator has a 'bias' compared to Pythia.
         """
-        tStat, pVal = stats.ttest_rel(self.genOur, self.genPythia)
+        backend = "SciPy"
+        if scipy_stats is not None:
+            try:
+                tStat, pVal = scipy_stats.ttest_rel(self.genOur, self.genPythia)
+            except Exception:
+                tStat, pVal, backend = self.ManualPairedTTest()
+        else:
+            tStat, pVal, backend = self.ManualPairedTTest()
 
         sigma, level, significant = self.InterpretSignificance(pVal)
 
@@ -158,7 +199,8 @@ class SimulatorComparison:
             "pVal": pVal,
             "sigma": sigma,
             "level": level,
-            "significant": significant
+            "significant": significant,
+            "backend": backend,
         }
 
     def PrintResult(self, result):
@@ -166,6 +208,8 @@ class SimulatorComparison:
         print("=" * 60)
         print(result["test"])
         print("-" * 60)
+        print(f"backend      : {result['backend']}")
+        print(f"t-statistic  : {result['tStat']:.3f}")
         print(f"p-value      : {result['pVal']:.3e}")
         print(f"significance : {result['sigma']:.2f} σ")
         print(f"interpretation: {result['level']}")
@@ -175,15 +219,34 @@ class SimulatorComparison:
         else:
             print("→ Null hypothesis not rejected (Generators are CONSISTENT)")
 
-    def PlotDistributions(self):
+    def PlotDistributions(self, show=True, savePath=None):
         """Creates a visual overlay of both generators to see if the shapes match."""
-        # KDE (Kernel Density Estimate) creates a smooth line over the histogram bars
-        sns.histplot(self.genOur, label="Our Generator", kde=True, stat="density")
-        sns.histplot(self.genPythia, label="Pythia", kde=True, stat="density")
-        plt.legend()
-        plt.xlabel(self.labels[0])
-        plt.title("Generator Comparison")
-        plt.show()
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        if sns is not None:
+            # KDE (Kernel Density Estimate) creates a smooth line over the histogram bars.
+            sns.histplot(self.genOur, label="Our Generator", kde=True, stat="density", ax=ax)
+            sns.histplot(self.genPythia, label="Pythia", kde=True, stat="density", ax=ax)
+        else:
+            bins = np.linspace(-1.0, 1.0, 31)
+            ax.hist(self.genOur, bins=bins, density=True, alpha=0.5, label="Our Generator")
+            ax.hist(self.genPythia, bins=bins, density=True, alpha=0.5, label="Pythia")
+
+        ax.legend()
+        ax.set_xlabel(self.labels[0])
+        ax.set_ylabel("Density")
+        ax.set_title("Generator Comparison")
+
+        if savePath is not None:
+            fig.savefig(savePath, dpi=200, bbox_inches="tight")
+            print(f"Distribution plot saved to: {savePath}")
+
+        if show:
+            plt.show()
+        else:
+            plt.close(fig)
+
+        return fig, ax
 
     def Run(self):
         """The main execution loop for the comparison."""
@@ -201,4 +264,6 @@ class SimulatorComparison:
         self.PrintResult(result)
 
         print("\nPlotting distributions...")
-        self.PlotDistributions()
+        projectRoot = Path(__file__).resolve().parent.parent
+        plotPath = projectRoot / "outputs" / "generator_comparison.png"
+        self.PlotDistributions(savePath=plotPath)

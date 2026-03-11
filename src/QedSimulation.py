@@ -76,7 +76,7 @@ class QedSimulation:
 
         print(f"\nOutput written to: {outputPath}")
 
-    def Run(self, nEvents, outFile):
+    def Run(self, nEvents, outFile, previewEvents=3):
         """
         The main execution loop. It creates the incoming beams,
         calculates the collision results, and stores the events.
@@ -130,9 +130,13 @@ class QedSimulation:
             event = Event(i, [muMinus, muPlus], [p1, p2])
             self.eventList.append(event)
 
-        # Print results to the console for verification
-        for event in self.eventList:
+        # Print a short preview so the console stays readable during demos.
+        for event in self.eventList[:previewEvents]:
             print(self.SerializeEvent(event))
             print("-" * 90)
+
+        omittedEvents = len(self.eventList) - min(previewEvents, len(self.eventList))
+        if omittedEvents > 0:
+            print(f"... {omittedEvents} additional events generated but omitted from console output.")
 
         self.WriteOutput(outFile)

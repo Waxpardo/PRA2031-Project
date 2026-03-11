@@ -1,3 +1,4 @@
+import numpy as np
 from QedSimulation import QedSimulation
 from MuonToElectron import MuonToElectron
 from ParticleRegistry import ParticleRegistry
@@ -33,8 +34,10 @@ myProcess = MuonToElectron(sqrtS=91.18)
 # Initialize the Quantum Electrodynamics (QED) simulation engine
 generator = QedSimulation(myProcess, registry)
 
-# Run the simulation for 1,000 unique collision events
-# In a deterministic setup, this will yield the same result every time.
+# Use a fixed seed so the demo and reported results stay reproducible.
+np.random.seed(2031)
+
+# Run the simulation for 1,000 unique collision events.
 generator.Run(nEvents=1000, outFile="OurOutput.txt")
 
 """

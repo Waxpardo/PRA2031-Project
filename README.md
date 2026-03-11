@@ -27,7 +27,7 @@ It generates events, writes them to file, compares them statistically to a refer
 
 ## Background: What is PYTHIA?
 
-´PYTHIA´is a widely used high-energy physics event generator developed for simulating particle collisions at experiments such as the Large Hadron Collider (LHC). It models the full chain of events in proton–proton collisions, including:
+´PYTHIA´ is a widely used high-energy physics event generator developed for simulating particle collisions at experiments such as the Large Hadron Collider (LHC). It models the full chain of events in proton–proton collisions, including:
 
 - Hard scattering processes
 - Parton showers
@@ -40,12 +40,16 @@ Mini PYTHIA does **not** aim to reproduce the full complexity of PYTHIA 8. Inste
 ## Features
 
 - Monte Carlo event generation for μ⁺ μ⁻ → e⁺ e⁻
+- Reproducible runs via a fixed random seed in `src/Main.py`
 - Relativistic four-vector kinematics
 - Event-by-event statistical comparison with reference sample
-- Paired hypothesis testing (SciPy + fallback implementation)
+- Paired hypothesis testing with SciPy when available
+- Manual statistical fallback if SciPy is unavailable or broken
 - Static and animated 3D track visualization
+- Saved comparison plot in `outputs/generator_comparison.png`
+- Short console preview for demos while still writing all events to file
 - Modular and extensible architecture
-- Built-in fallback if SciPy is unavailable
+- Built-in visualization fallback if Seaborn is unavailable
 
 ## Installation
 
@@ -104,6 +108,9 @@ python src/Main.py
 
 ´´´
 
+The main script uses a fixed seed (`2031`) so the generated sample and analysis
+results are reproducible across runs.
+
 For headless environments (no GUI):
 
 ´´´bsh
@@ -122,11 +129,13 @@ python src/ConvertCsv.py
 
 ### Example Workflow
 
-1. Generate events.
-2. Output written to `outputs/OurOutput.txt`.
-3. Compare with reference sample `outputs/mumu_EW.txt`.
-4. Produce statistical test results.
-5. Generate static and animated 3D track plots.
+1. Generate a reproducible 1,000-event sample.
+2. Preview the first 3 events in the console.
+3. Write the full event sample to `outputs/OurOutput.txt`.
+4. Compare with reference sample `outputs/mumu_EW.txt`.
+5. Print statistical test results with SciPy or the built-in manual fallback.
+6. Save the comparison plot to `outputs/generator_comparison.png`.
+7. Generate static and animated 3D track plots.
 
 
 ## Physics Basis
@@ -152,6 +161,10 @@ Unlike full-scale generators such as PYTHIA 8, which include QCD dynamics and el
    - SciPy paired t-test (`scipy.stats.ttest_rel`), or
    - Manual fallback t-statistic with normal approximation.
 5. Converts p-value into Gaussian significance (σ).
+6. Saves a histogram comparison to `outputs/generator_comparison.png`.
+
+Implementation note:
+- The observable parser reads the final four-vector values `(E, px, py, pz)` from each selected event line, rather than the event ID / PDG prefix fields.
 
 Interpretation:
 - ≥ 5σ → Discovery
@@ -174,6 +187,7 @@ mini-pythia/
 │   ├── mumu_EW.csv
 │   ├── mumu_EW.txt
 │   ├── OurOutput.txt
+│   ├── generator_comparison.png
 │   └── *.png / *.gif
 │
 ├── src/
@@ -223,6 +237,14 @@ outputs/combined_events_static.png
 
 ´´´
 
+Generator comparison plot:
+
+´´´
+
+outputs/generator_comparison.png
+
+´´´
+
 
 ## Contributing
 
@@ -255,6 +277,13 @@ For questions or feedback:
 
 
 ## Changelog
+
+### v1.1
+- Added deterministic simulation seed for reproducible demos
+- Reduced console output to a short event preview
+- Added robust fallback path for statistical analysis when SciPy is unavailable
+- Saved generator comparison plots directly to `outputs/generator_comparison.png`
+- Corrected observable extraction to read the event four-vector fields
 
 ### v1.0
 - Initial event generator
